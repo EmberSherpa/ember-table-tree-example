@@ -1,0 +1,23 @@
+.table-container {
+  height: 500px;
+  width: 100%;
+}
+
+.is-collapsed .ember-table-content:before,
+.is-not-collapsed .ember-table-content:before,
+.is-loading .ember-table-content:before {
+  font: normal normal normal 14px/1 FontAwesome;
+  display: inline-block;
+}
+
+.is-collapsed .ember-table-content:before {
+  content: "\f13a";
+}
+
+.is-not-collapsed .ember-table-content:before {
+  content: "\f138";
+}
+
+.is-loading .ember-table-content:before {
+  content: "\f110"
+}
