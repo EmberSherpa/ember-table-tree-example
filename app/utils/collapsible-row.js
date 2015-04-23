@@ -5,6 +5,7 @@ export default Row.extend({
   isLoaded: false,
   parent: null,
   children: null,
+  indentation: 0,
   collapse() {
     let children = this.get('children');
     if (children) {

@@ -48,10 +48,15 @@ export default EmberTableComponent.extend({
     this.notifyPropertyChange('rows');
   },
   createRow(rowData, parent) {
+    let indentation = 0;
+    if (parent) {
+      indentation = get(parent, 'indentation') + 10;
+    }
     return CollapsibleRow.create({
       parentController: this,
       content: rowData,
-      parent: parent
+      parent: parent,
+      indentation: indentation
     });
   },
   inject(parent, data) {
