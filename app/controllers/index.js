@@ -19,7 +19,7 @@ export default Ember.Controller.extend({
   fetchDataCallback: Ember.computed('model.columns', function(){
     var columns = this.get('model.columns');
     return (row)=>{
-      return Ember.RSVP.Promise((resolve)=>{
+      return new Ember.RSVP.Promise((resolve)=>{
         Ember.run.later(()=>{
           resolve(createData(columns, 100, get(row, 'id')));
         }, 2000)

@@ -11,11 +11,11 @@
 }
 
 .is-collapsed .ember-table-content:before {
-  content: "\f13a";
+  content: "\f138";
 }
 
 .is-not-collapsed .ember-table-content:before {
-  content: "\f138";
+  content: "\f13a";
 }
 
 .is-loading .ember-table-content:before {

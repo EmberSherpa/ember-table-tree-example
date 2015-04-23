@@ -1,5 +1,7 @@
 var seed;
 
+let id = 0;
+
 /**
  * Create data always returns the same dataset of arbitrary
  * @param columns
@@ -11,7 +13,8 @@ export default function createData(columns, count = 1000, randomSeed = 6) {
   seed = randomSeed;
   var data = [];
   for (var i = 0; i < count; i++) {
-    var row = {id: i};
+    id++;
+    var row = {id: id};
     columns.mapBy('contentPath').forEach(function(contentPath){
       var value;
       if (contentPath === 'name') {
