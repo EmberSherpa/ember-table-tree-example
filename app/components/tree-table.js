@@ -1,3 +1,4 @@
+import Ember from 'ember';
 import EmberTableComponent from 'ember-table/components/ember-table';
 import CollapsibleRow from '../utils/collapsible-row';
 

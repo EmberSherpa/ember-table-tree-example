@@ -22,8 +22,8 @@ export default Ember.Controller.extend({
       return new Ember.RSVP.Promise((resolve)=>{
         Ember.run.later(()=>{
           resolve(createData(columns, 100, get(row, 'id')));
-        }, 2000)
+        }, 2000);
       });
-    }
+    };
   })
 });

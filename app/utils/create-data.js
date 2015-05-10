@@ -1,3 +1,5 @@
+/*jshint loopfunc: true */
+
 var seed;
 
 let id = 0;
@@ -11,7 +13,7 @@ let id = 0;
 export default function createData(columns, count = 1000, randomSeed = 6) {
   // the initial seed
   seed = randomSeed;
-  var data = [];
+  let data = [];
   for (var i = 0; i < count; i++) {
     id++;
     var row = {id: id};

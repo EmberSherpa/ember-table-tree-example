@@ -12,6 +12,6 @@ export default Ember.Route.extend({
     return {
       columns: columns,
       data: createData(columns)
-    }
+    };
   }
 });
