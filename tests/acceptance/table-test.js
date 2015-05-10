@@ -35,6 +35,7 @@ test('visiting /', function(assert) {
 
     data = controller.get('model.data');
     data.replace(1, 1, [{id: 2, open: 123, close: 246, highest: 246}]);
+    assert.deepEqual(data[1], {id: 2, open: 123, close: 246, highest: 246}, "2nd row was updated");
   });
   andThen(function(){
     assert.equal(cell(1, 1).text().trim(), 123, "value of open cell in second row is 123 after row was replaced");
