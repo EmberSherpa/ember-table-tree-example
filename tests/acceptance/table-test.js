@@ -43,5 +43,5 @@ test('visiting /', function(assert) {
   // andThen(function(){
   //   return new Ember.RSVP.Promise(function(){ debugger; });
   // });
-  // return pauseTest();
+  //return pauseTest();
 });

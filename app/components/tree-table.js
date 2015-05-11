@@ -1,78 +1,106 @@
 import Ember from 'ember';
 import EmberTableComponent from 'ember-table/components/ember-table';
-import CollapsibleRow from '../utils/collapsible-row';
+import Row from 'ember-table/controllers/row';
+import insert from '../utils/insert';
 
 var get = Ember.get;
 
 export default EmberTableComponent.extend({
   layoutName: 'components/ember-table',
   "fetch-data": null,
-  actions: {
-      toggleCollapse(row) {
-        let isCollapsed = get(row, 'isCollapsed');
-        if (isCollapsed) {
-          this.expand(row);
-        } else {
-          this.collapse(row);
-        }
-      }
-  },
-  createRows: Ember.on('didInsertElement', function(){
-    let rows = this.get('content').map((rowData)=>{
-      return this.createRow(rowData);
-    });
-    this.set('rows', rows);
-  }),
+  expanded: [],
+  loaded: [],
+  loading: [],
   bodyContent: Ember.computed.filterBy('rows', 'isShowing', true),
-  expand(row) {
-    let isLoaded = get(row, 'isLoaded');
-    if (isLoaded) {
-      row.expand();
-      this.notifyPropertyChange('rows');
-      return;
+  rows: Ember.computed('content.@each', 'expanded.@each', 'loading.@each', function(){
+    let content = this.get('content');
+    if (content == null) {
+      return [];
     }
-    row.set('isLoading', true);
-    let fetchDataCallback = this.get('fetch-data');
-    fetchDataCallback(row)
-      .then((data)=>{
-        this.inject(row, data);
-        row.set('isLoaded', true);
-        row.expand();
-        this.notifyPropertyChange('rows');
-      })
-      .finally(()=>{
-        row.set('isLoading', false);
+    let expanded = this.get('expanded');
+    let loading = this.get('loading');
+    return content.map((data)=>{
+      let parent = get(data, 'parent');
+      return Row.create({
+        parentController: this,
+        content: data,
+        isCollapsed: expanded.indexOf(data) === -1,
+        isShowing: parent == null || ( parent != null && expanded.indexOf(parent) !== -1 ),
+        isLoading: loading.indexOf(data) !== -1
       });
+    });
+  }),
+  isLoaded(data) {
+    return this.get('loaded').indexOf(data) !== -1;
   },
-  collapse(row) {
-    row.collapse();
-    this.notifyPropertyChange('rows');
+  markLoaded(data) {
+    return this.get('loaded').pushObject(data);
   },
-  createRow(rowData, parent) {
-    let indentation = 0;
-    if (parent) {
-      indentation = get(parent, 'indentation') + 10;
-    }
-    return CollapsibleRow.create({
-      parentController: this,
-      content: rowData,
-      parent: parent,
-      indentation: indentation
+  isExpanded(data) {
+    return this.get('expanded').indexOf(data) !== -1;
+  },
+  collapse(data) {
+    let expanded = this.get('expanded');
+    let children = this.findChildren(expanded, data);
+    let withoutChildren = expanded.without(parent).filter(function(item){
+      return children.indexOf(item) === -1;
+    });
+    expanded.setObjects(withoutChildren);
+  },
+  findChildren(arr, parent) {
+    return Array.prototype.concat.apply([parent], arr.filterBy('parent', parent).map((child)=>{
+      return this.findChildren(arr, child);
+    }));
+  },
+  expand(data) {
+    this.get('expanded').pushObject(data);
+  },
+  showLoadingIndicator(data) {
+    this.get('loading').pushObject(data);
+  },
+  hideLoadingIndicator(data) {
+    let loading = this.get('loading');
+    loading.setObjects(loading.without(data));
+  },
+  fetch(parent) {
+    return new Ember.RSVP.Promise((resolve, reject)=>{
+      let fetchData = this.get('fetch-data');
+      if (fetchData == null) {
+        reject('fetch-data is not implemented or not passed to tree-table component');
+      }
+      fetchData(parent).then(resolve, reject);
     });
   },
   inject(parent, data) {
-    let newRows = data.map((rowData)=>{
-      return this.createRow(rowData, parent);
+    let contexted = data.map((datum)=>{
+      return Ember.ObjectProxy.create({
+        content: datum,
+        parent: parent,
+        indentation: ( get(parent, 'indentation') || 0 ) + 10
+      });
     });
-    parent.set('children', newRows);
-    let rows = this.get('rows');
-    var merged = rows.reduce(function(accumulator, current){
-      accumulator.pushObject(current);
-      if (current === parent) {
-        accumulator = accumulator.concat(newRows);
+    let content = this.get('content');
+    let parentIndex = content.indexOf(parent);
+    insert(content, parentIndex+1, contexted);
+  },
+  actions: {
+      toggleCollapse(parent) {
+        if (this.isExpanded(parent)) {
+          this.collapse(parent);
+        } else if (this.isLoaded(parent)){
+          this.expand(parent);
+        } else {
+          this.showLoadingIndicator(parent);
+          this.fetch(parent)
+            .then((data)=>{
+              this.inject(parent, data);
+              this.markLoaded(parent);
+            })
+            .finally(()=>{
+              this.hideLoadingIndicator(parent);
+            });
+          this.expand(parent);
+        }
       }
-      return accumulator;
-    }, []);
-    this.set('rows', merged);
   }
 });
